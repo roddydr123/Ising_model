@@ -7,17 +7,17 @@ from physics import Ising
 
 class Animation(object):
 
-    def __init__(self, size, radius, speed, rotateDiff, nsteps, printFreq):
+    def __init__(self, system_size, temperature, method):
         # Set up the model
-        self.model = Ising(size, radius, speed, rotateDiff)
+        self.model = Ising(system_size, temperature, method)
         self.nsteps = 50
         self.printFreq = 1
 
         # Set up matplotlib variables
         self.fig, self.ax = plt.subplots()
         
-        # Draw the lattice as an image in matplotlib
-        self.implot = self.ax.imshow(self.model.lattice)
+        # Draw the spins as an image in matplotlib
+        self.implot = self.ax.imshow(self.model.spins)
         self.ani = None # For storing the animation object
         
     def run(self):
@@ -42,8 +42,8 @@ class Animation(object):
         # the screen. The argument frame (required) gives the index of the 
         # current animation frame
         
-        # Update the image to show the latest configuration of the lattice
-        self.implot.set_data(self.model.lattice)
+        # Update the image to show the latest configuration of the spins
+        self.implot.set_data(self.model.spins)
 
         # Return the "artists" whose contents have been updated. Here we have 
         # changed the image data, so we need to return the artist that is 
