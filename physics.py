@@ -24,9 +24,40 @@ class Ising(object):
     def updateSpins(self):
         # choose a random site
         spin_index = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+        # spin_index = (3, 3)
         spin_value = self.spins[spin_index[0], spin_index[1]]
 
-        
+        # find nearest neighbour spins. Check if adding 1 will be outside the matrix.
+        added = list(spin_index)
+        if spin_index[0] == system_size - 1:
+            added[0] = -1
+        if spin_index[1] == system_size - 1:
+            added[1] = -1
+
+        nn_spins = np.array([self.spins[added[0] + 1, spin_index[1]], self.spins[spin_index[0] - 1, spin_index[1]],
+                    self.spins[spin_index[0], spin_index[1] - 1], self.spins[spin_index[0], added[1] + 1]])
+    
+        # print(nn_spins)
+        print(self.spins)
+        # print(spin_value)
+
+        # calculate change in energy if flipped
+
+        deltaE = -1 * np.sum(spin_value * nn_spins)
+        print(deltaE)
+        print(spin_index)
+
+        prob_flip = 1
+        if deltaE > 0:
+            prob_flip = np.exp(-deltaE/self.temperature)
+
+        prob_rand = np.random.rand(1)
+
+        if prob_rand > 1 - prob_flip:
+            self.spins[spin_index[0], spin_index[1]] *= -1
+
+        # just now they always get flipped...
+
 
         
 
