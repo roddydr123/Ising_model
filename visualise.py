@@ -10,16 +10,16 @@ class Animation(object):
     def __init__(self, system_size, temperature, method):
         # Set up the model
         self.model = Ising(system_size, temperature, method)
-        self.nsteps = 50
-        self.printFreq = 1
+        self.nsteps = 10000
+        self.printFreq = 10
 
         # Set up matplotlib variables
         self.fig, self.ax = plt.subplots()
         
         # Draw the spins as an image in matplotlib
-        self.implot = self.ax.imshow(self.model.spins)
+        self.implot = self.ax.imshow(self.model.spins, animated=True)
         self.ani = None # For storing the animation object
-        
+
     def run(self):
         # Create a separate thread to run the simulation model
         # Note that variables are shared between the threads
@@ -53,17 +53,16 @@ class Animation(object):
 
 # Main entry point of the program
 if __name__ == "__main__":
-    
+
     # Read input arguments
     args = sys.argv
     if (len(args) != 4):
         print("Usage visualise.py system_size, temperature, method")
         sys.exit(1)
 
-    system_size = tuple(args[1])
+    system_size = int(args[1])
     temperature = float(args[2])
     method = str(args[3])
-
-    # Set up and run the visualisation
+    
     view = Animation(system_size, temperature, method)
     view.run()
