@@ -29,14 +29,7 @@ class Ising(object):
         spin_value = self.spins[spin_index[0], spin_index[1]]
 
         # find nearest neighbour spins. Check if adding 1 will be outside the matrix.
-        added = list(spin_index)
-        if spin_index[0] == self.system_size - 1:
-            added[0] = -1
-        if spin_index[1] == self.system_size - 1:
-            added[1] = -1
-
-        nn_spins = np.array([self.spins[added[0] + 1, spin_index[1]], self.spins[spin_index[0] - 1, spin_index[1]],
-                    self.spins[spin_index[0], spin_index[1] - 1], self.spins[spin_index[0], added[1] + 1]])
+        nn_spins = self.get_nn_spins(spin_index)
 
         # calculate change in energy if flipped
         deltaE = 2 * J * spin_value * np.sum(nn_spins)
@@ -47,38 +40,52 @@ class Ising(object):
 
         if prob_rand < prob_flip:
             self.spins[spin_index[0], spin_index[1]] *= -1
+        return
+    
+    def get_nn_spins(self, indices):
+        added = list(indices)
+        if indices[0] == self.system_size - 1:
+            added[0] = -1
+        if indices[1] == self.system_size - 1:
+            added[1] = -1
+
+        nn_spins = np.array([self.spins[added[0] + 1, indices[1]], self.spins[indices[0] - 1, indices[1]],
+                    self.spins[indices[0], indices[1] - 1], self.spins[indices[0], added[1] + 1]])
+
+        return nn_spins
 
     def updateSpinsKawasaki(self):
         # choose a random site
-        spin_index = (np.random.randint(self.system_size), np.random.randint(self.system_size))
-        # spin_index = (3, 3)
-        spin_value = self.spins[spin_index[0], spin_index[1]]
+        first_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+        second_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+
+        first_spin_value = self.spins[first_spin_indices[0], first_spin_indices[1]]
+        second_spin_value = self.spins[second_spin_indices[0], second_spin_indices[1]]
+
+        if first_spin_value == second_spin_value:
+            # if the spins are the same, don't swap them.
+            return
 
         # find nearest neighbour spins. Check if adding 1 will be outside the matrix.
-        added = list(spin_index)
-        if spin_index[0] == system_size - 1:
-            added[0] = -1
-        if spin_index[1] == system_size - 1:
-            added[1] = -1
-
-        nn_spins = np.array([self.spins[added[0] + 1, spin_index[1]], self.spins[spin_index[0] - 1, spin_index[1]],
-                    self.spins[spin_index[0], spin_index[1] - 1], self.spins[spin_index[0], added[1] + 1]])
+        first_nn_spins = self.get_nn_spins(first_spin_indices)
+        second_nn_spins = self.get_nn_spins(second_spin_indices)
 
         # calculate change in energy if flipped
-        deltaE = -1 * np.sum(spin_value * nn_spins)
+        deltaE = (-1 * np.sum(first_spin_value * first_nn_spins)) + (-1 * np.sum(second_spin_value * second_nn_spins))
 
         prob_flip = 1
-        if deltaE > 0:
-            prob_flip = np.exp(-deltaE/self.temperature)
+        if deltaE < 0:
+            prob_flip = np.exp(deltaE/self.temperature)
 
         prob_rand = np.random.rand(1)
 
         if prob_rand > 1 - prob_flip:
-            self.spins[spin_index[0], spin_index[1]] *= -1
+            self.spins[first_spin_indices[0], first_spin_indices[1]] *= -1
+            self.spins[second_spin_indices[0], second_spin_indices[1]] *= -1
+        return
 
     def printSpins(self):
-        
-        """
+
         outfile = "spins.dat"
         # Write the lattice first to a temporary file
         with open(outfile+".tmp", "w") as writer:
@@ -88,14 +95,13 @@ class Ising(object):
                 writer.write("\n")
         # Rename the temporary file to the output file
         os.rename(outfile+".tmp", outfile)
-        """
 
     def run(self, nsteps, printFreq):
         self.stopSim = False
 
-        for i in range(nsteps):
+        for n in range(nsteps):
             for M in range(self.system_size):
-                for N in range(1):
+                for N in range(10):
                     if (self.stopSim): break
 
                     if self.method == "G":
@@ -106,7 +112,8 @@ class Ising(object):
                         print("Method: G for Glauber or K for Kawasaki")
                         sys.exit(1)
 
-            if (i % printFreq == 0):
+            if (n % printFreq == 0):
+                # print(n)
                 self.printSpins()
 
     def stop(self):
