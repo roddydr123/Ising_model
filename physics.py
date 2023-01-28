@@ -10,17 +10,12 @@ class Ising(object):
 
     def __init__(self, system_size, temperature, method):
         self.system_size = system_size
-        self.spins = np.zeros((system_size, system_size), dtype=float)
 
-        # make spins random
-        self.spins = np.random.rand(system_size, system_size)
-        self.spins[self.spins > 0.5] = 1
-        self.spins[self.spins < 0.5] = -1
+        # make system of random spins up or down
+        self.spins = np.random.choice([-1, 1], [system_size, system_size])
 
         self.temperature = temperature
         self.method = method
-
-        self.stopSim = False # Flag to stop the simulation thread
 
     def updateSpinsGlauber(self):
         # choose a random site
@@ -79,63 +74,8 @@ class Ising(object):
             self.spins[second_spin_indices[0], second_spin_indices[1]] *= -1
         return
 
-    def printSpins(self):
-
-        outfile = "spins.dat"
-        # Write the lattice first to a temporary file
-        with open(outfile+".tmp", "w") as writer:
-            for i in range(self.system_size):
-                for j in range(self.system_size):
-                    writer.write(f"{i} {j} {self.spins[i,j]}\n")
-                writer.write("\n")
-        # Rename the temporary file to the output file
-        os.rename(outfile+".tmp", outfile)
-
-    def run(self, nsteps, printFreq):
-        self.stopSim = False
-
-        for n in range(nsteps):
-            for M in range(self.system_size):
-                for N in range(10):
-                    if (self.stopSim): break
-
-                    if self.method == "G":
-                        self.updateSpinsGlauber()
-                    elif self.method == "K":
-                        self.updateSpinsKawasaki()
-                    else:
-                        print("Method: G for Glauber or K for Kawasaki")
-                        sys.exit(1)
-
-            if (n % printFreq == 0):
-                # print(n)
-                self.printSpins()
-
-    def stop(self):
-        self.stopSim = True
-
     def get_total_magnetisation(self):
         return np.sum(self.spins)
 
     def get_total_energy(self):
         return 0
-
-
-# Main entry point of the program without visualisation
-if __name__ == "__main__":
-
-    # Read input arguments
-    args = sys.argv
-    if (len(args) != 4):
-        print("Usage visualise.py system_size, temperature, method")
-        sys.exit(1)
-
-    system_size = int(args[1])
-    temperature = float(args[2])
-    method = str(args[3])
-    nsteps = 10
-    printFreq = 1
-    
-    # Set up and run the model
-    model = Ising(system_size, temperature, method)
-    model.run(nsteps, printFreq)
