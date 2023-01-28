@@ -26,23 +26,21 @@ class Ising(object):
         # choose a random site
         spin_index = (np.random.randint(self.system_size), np.random.randint(self.system_size))
 
-        spin_value = self.spins[spin_index[0], spin_index[1]]
-
-        # find nearest neighbour spins. Check if adding 1 will be outside the matrix.
-        nn_spins = self.get_nn_spins(spin_index)
-
         # calculate change in energy if flipped
-        deltaE = 2 * J * spin_value * np.sum(nn_spins)
+        deltaE = self.get_deltaE(spin_index)
 
         prob_flip = np.exp(-deltaE/self.temperature)
 
-        prob_rand = np.random.rand(1)[0]
+        prob_rand = np.random.random()
 
         if prob_rand < prob_flip:
             self.spins[spin_index[0], spin_index[1]] *= -1
         return
-    
-    def get_nn_spins(self, indices):
+
+    def get_deltaE(self, indices):
+
+        spin_value = self.spins[indices[0], indices[1]]
+
         added = list(indices)
         if indices[0] == self.system_size - 1:
             added[0] = -1
@@ -52,7 +50,7 @@ class Ising(object):
         nn_spins = np.array([self.spins[added[0] + 1, indices[1]], self.spins[indices[0] - 1, indices[1]],
                     self.spins[indices[0], indices[1] - 1], self.spins[indices[0], added[1] + 1]])
 
-        return nn_spins
+        return 2 * J * spin_value * np.sum(nn_spins)
 
     def updateSpinsKawasaki(self):
         # choose a random site
@@ -66,20 +64,14 @@ class Ising(object):
             # if the spins are the same, don't swap them.
             return
 
-        # find nearest neighbour spins. Check if adding 1 will be outside the matrix.
-        first_nn_spins = self.get_nn_spins(first_spin_indices)
-        second_nn_spins = self.get_nn_spins(second_spin_indices)
-
         # calculate change in energy if flipped
-        deltaE = (-1 * np.sum(first_spin_value * first_nn_spins)) + (-1 * np.sum(second_spin_value * second_nn_spins))
+        deltaE = self.get_deltaE(first_spin_indices) + self.get_deltaE(second_spin_indices)
 
-        prob_flip = 1
-        if deltaE < 0:
-            prob_flip = np.exp(deltaE/self.temperature)
+        prob_flip = np.exp(-deltaE/self.temperature)
 
-        prob_rand = np.random.rand(1)
+        prob_rand = np.random.random()
 
-        if prob_rand > 1 - prob_flip:
+        if prob_rand < prob_flip:
             self.spins[first_spin_indices[0], first_spin_indices[1]] *= -1
             self.spins[second_spin_indices[0], second_spin_indices[1]] *= -1
         return
@@ -118,6 +110,12 @@ class Ising(object):
 
     def stop(self):
         self.stopSim = True
+
+    def get_total_magnetisation(self):
+        return np.sum(self.spins)
+
+    def get_total_energy(self):
+        return 0
 
 
 # Main entry point of the program without visualisation
