@@ -67,6 +67,9 @@ class Ising(object):
         # calculate change in energy if flipped
         deltaE = self.get_deltaE(first_spin_indices) + self.get_deltaE(second_spin_indices)
 
+        if np.linalg.norm([first_spin_indices[0] - second_spin_indices[0], first_spin_indices[1], second_spin_indices[1]])%self.system_size == 1:
+            deltaE +=4
+
         prob_flip = np.exp(-deltaE/self.temperature)
 
         prob_rand = np.random.random()
