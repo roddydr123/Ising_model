@@ -129,5 +129,5 @@ dmypy.json
 .pyre/
 
 
-.dat
-.json
+spins.dat
+launch.json
