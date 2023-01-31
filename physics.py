@@ -15,6 +15,7 @@ class Ising(object):
         self.temperature = temperature
         self.method = method
         self.magnetisation_list = []
+        self.energy_list = []
 
     def updateSpinsGlauber(self):
         # choose a random site
@@ -56,19 +57,34 @@ class Ising(object):
             self.spins[first_spin_indices[0], first_spin_indices[1]] *= -1
             self.spins[second_spin_indices[0], second_spin_indices[1]] *= -1
 
+    def get_nn_spins(self, indices):
+        """Find spins of nearest neighbours to spin at [indices].
+
+        Args:
+            indices (list): indices of the spin to be checked.
+
+        Returns:
+            array: The four nearest neighbour spins.
+        """
+
+        nn_spins = np.array([self.spins[(indices[0] + 1)%self.system_size, indices[1]],
+                             self.spins[indices[0] - 1, indices[1]],
+                             self.spins[indices[0], indices[1] - 1],
+                             self.spins[indices[0], (indices[1] + 1)%self.system_size]])
+        return nn_spins
+
     def get_deltaE(self, indices):
+        """Finds the energy difference if a spin is flipped.
+
+        Args:
+            indices (list): indices of the spin to be (maybe) flipped.
+
+        Returns:
+            float: difference in energy between original state and spin flip.
+        """
 
         spin_value = self.spins[indices[0], indices[1]]
-
-        added = list(indices)
-        if indices[0] == self.system_size - 1:
-            added[0] = -1
-        if indices[1] == self.system_size - 1:
-            added[1] = -1
-
-        nn_spins = np.array([self.spins[added[0] + 1, indices[1]], self.spins[indices[0] - 1, indices[1]],
-                    self.spins[indices[0], indices[1] - 1], self.spins[indices[0], added[1] + 1]])
-
+        nn_spins = self.get_nn_spins(indices)
         return 2 * J * spin_value * np.sum(nn_spins)
 
     def get_total_magnetisation(self):
@@ -77,6 +93,11 @@ class Ising(object):
         return magnetisation
 
     def get_susceptibility(self):
+        """Calculate magnetic susceptibility.
+
+        Returns:
+            float: Magnetic susceptibility.
+        """
         # (average of M)**2
         g = np.average(self.magnetisation_list)**2
         # average of (M**2)
@@ -85,4 +106,59 @@ class Ising(object):
         return n/((self.system_size)**2 * self.temperature)
 
     def get_total_energy(self):
-        return 0
+
+        total_energy = 0
+
+        for i in range(self.system_size):
+            for j in range(self.system_size):
+                nn_spins = self.get_nn_spins([i,j])
+                total_energy += np.sum(nn_spins)
+
+        total_energy *= -1 * J
+        self.energy_list.append(total_energy)
+        return total_energy
+
+    def get_heat_capacity(self, energies=None, no_states=None):
+        """Calculates the heat capacity per spin of the spins matrix.
+
+        Returns:
+            float: heat capacity per spin.
+        """
+        if energies is None:
+            energies = self.energy_list
+        if no_states is None:
+            no_states = self.system_size
+
+        g = np.average(energies)**2
+
+        h = np.average(np.array(energies)**2)
+        n = h-g
+        return n/((no_states)**2 * self.temperature**2)
+
+    def get_bootstrap_error(self, n, k):
+        """Compute error on heat capacity at the end of the run.
+
+        Args:
+            n (int): number of states to sample per sp heat calculation.
+            k (int): number of times to repeat resampling.
+
+        Returns:
+            float: error on specific heat for this temperature.
+        """
+
+        # choose x number of energies from the list.
+        # calculate the specific heat capacity and save it.
+        # repeat k times with another random set of energies.
+        # compute sigma c from the list of heat capacities.
+        
+        sp_heat_caps = []
+        for i in range(k):
+            energies = np.random.choice(self.energy_list, n)
+            sp_heat_caps.append(self.get_heat_capacity(energies=energies, no_states=n))
+        g = np.average(sp_heat_caps)**2
+        h = np.average(np.array(sp_heat_caps)**2)
+        error = np.sqrt(h-g)
+        return error
+
+    def jacknife(self):
+        pass
