@@ -87,30 +87,44 @@ class Ising(object):
         nn_spins = self.get_nn_spins(indices)
         return 2 * J * spin_value * np.sum(nn_spins)
 
+
     def get_total_magnetisation(self):
         magnetisation = np.sum(self.spins)
         self.magnetisation_list.append(magnetisation)
         return magnetisation
 
-    def get_susceptibility(self):
-        """Calculate magnetic susceptibility.
+
+    def get_susceptibility(self, magnetisations=None, no_states=None):
+        """Calculate magnetic susceptibility from all measurements.
 
         Returns:
             float: Magnetic susceptibility.
         """
+
+        if magnetisations is None:
+            magnetisations = self.magnetisation_list
+        if no_states is None:
+            no_states = self.system_size
+
         # (average of M)**2
-        g = np.average(self.magnetisation_list)**2
+        g = np.average(magnetisations)**2
         # average of (M**2)
-        h = np.average(np.array(self.magnetisation_list)**2)
+        h = np.average(np.array(magnetisations)**2)
         n = h - g
-        return n/((self.system_size)**2 * self.temperature)
+        return n/((no_states)**2 * self.temperature)
+
 
     def get_total_energy(self):
+        """Calculate the total energy of the system by summing over spins.
 
+        Returns:
+            float: Total energy
+        """
         total_energy = 0
 
         for i in range(self.system_size):
-            for j in range(self.system_size):
+            # don't repeat sum
+            for j in range(i+1, self.system_size):
                 nn_spins = self.get_nn_spins([i,j])
                 total_energy += np.sum(nn_spins)
 
@@ -118,11 +132,16 @@ class Ising(object):
         self.energy_list.append(total_energy)
         return total_energy
 
+
     def get_heat_capacity(self, energies=None, no_states=None):
-        """Calculates the heat capacity per spin of the spins matrix.
+        """Calculate the heat capacity per spin.
+
+        Args:
+            energies (array, optional): sample of total energies. Defaults to None.
+            no_states (int, optional): number of states to sample. Defaults to None.
 
         Returns:
-            float: heat capacity per spin.
+            float: heat capacity
         """
         if energies is None:
             energies = self.energy_list
@@ -135,7 +154,8 @@ class Ising(object):
         n = h-g
         return n/((no_states)**2 * self.temperature**2)
 
-    def get_bootstrap_error(self, n, k):
+
+    def get_bootstrap_error(self, n, k, q):
         """Compute error on heat capacity at the end of the run.
 
         Args:
@@ -150,13 +170,20 @@ class Ising(object):
         # calculate the specific heat capacity and save it.
         # repeat k times with another random set of energies.
         # compute sigma c from the list of heat capacities.
-        
-        sp_heat_caps = []
-        for i in range(k):
-            energies = np.random.choice(self.energy_list, n)
-            sp_heat_caps.append(self.get_heat_capacity(energies=energies, no_states=n))
-        g = np.average(sp_heat_caps)**2
-        h = np.average(np.array(sp_heat_caps)**2)
+
+        quantity = []
+
+        if q == "c":
+            for i in range(k):
+                energies = np.random.choice(self.energy_list, n)
+                quantity.append(self.get_heat_capacity(energies=energies, no_states=n))
+        elif q == "x":
+            for i in range(k):
+                mags = np.random.choice(self.magnetisation_list, n)
+                quantity.append(self.get_susceptibility(magnetisations=mags, no_states=n))
+
+        g = np.average(quantity)**2
+        h = np.average(np.array(quantity)**2)
         error = np.sqrt(h-g)
         return error
 

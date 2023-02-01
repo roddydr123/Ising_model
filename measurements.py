@@ -19,12 +19,6 @@ def onerun(kT):
 
     model = Ising(lx, kT, method)
 
-    runfile = f"data/{kT}output.dat"
-
-    # clear file
-    f = open(runfile, "w")
-    f.close()
-
     for n in tqdm(range(nstep)):
         for i in range(lx):
             for j in range(ly):
@@ -35,33 +29,23 @@ def onerun(kT):
 
         if n % 10 == 0 and n > wait:
 
-            total_magnetisation = model.get_total_magnetisation()
-            total_energy = model.get_total_energy()
-            susceptibility = model.get_susceptibility()
-            heat_capacity = model.get_heat_capacity()
-            
-            # record required data
-            with open(runfile, "a") as file:
-                file.write(f"{total_magnetisation}, {total_energy}, {susceptibility}, {heat_capacity}\n")
+            model.get_total_magnetisation()
+            model.get_total_energy()
 
-    # compute average specific heat for this temp
-    # read totals from file
-    read_data = np.genfromtxt(runfile, delimiter=",")
+    av_sp_heat = model.get_heat_capacity()
+    av_energy = np.average(model.energy_list)
+    av_magnetisation = np.average(model.magnetisation_list)
+    av_susceptibility = model.get_susceptibility()
 
-    av_sp_heat = np.average(read_data[:,3])
-    av_energy = np.average(read_data[:,1])
-    av_magnetisation = np.average(read_data[:,0])
-    av_susceptibility = np.average(read_data[:,2])
-
-    c_error = model.get_bootstrap_error(200, 50)
-    with open("data/bs_errors.dat", "a") as errorfile:
-        errorfile.write(f"{kT}, {av_sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {av_susceptibility}\n")
+    c_error = model.get_bootstrap_error(200, 50, "c")
+    with open("data/results.dat", "a") as outfile:
+        outfile.write(f"{kT}, {av_sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {av_susceptibility}\n")
 
 
 def main():
 
     # clear file
-    f = open("data/bs_errors.dat", "w")
+    f = open("data/results.dat", "w")
     f.close()
 
     # make array of all the temperatures to loop through
