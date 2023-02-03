@@ -6,7 +6,10 @@ J = 1
 
 class Ising(object):
 
+
+
     def __init__(self, system_size, temperature, method):
+        np.random.seed(10)
         self.system_size = system_size
 
         # make system of random spins up or down
@@ -16,6 +19,14 @@ class Ising(object):
         self.method = method
         self.magnetisation_list = []
         self.energy_list = []
+
+        # # random indices to choose spins
+        # self.rands = np.random.randint(0, system_size, size=(n_randints, 4))
+
+        # # random numbers to compare probabilities with
+        # self.probs = 3
+
+
 
     def updateSpinsGlauber(self):
         # choose a random site
@@ -30,6 +41,8 @@ class Ising(object):
 
         if prob_rand < prob_flip:
             self.spins[spin_indices[0], spin_indices[1]] *= -1
+
+
 
     def updateSpinsKawasaki(self):
         # choose a random site
@@ -57,6 +70,8 @@ class Ising(object):
             self.spins[first_spin_indices[0], first_spin_indices[1]] *= -1
             self.spins[second_spin_indices[0], second_spin_indices[1]] *= -1
 
+
+
     def get_nn_spins(self, indices):
         """Find spins of nearest neighbours to spin at [indices].
 
@@ -73,6 +88,8 @@ class Ising(object):
                              self.spins[indices[0], (indices[1] + 1)%self.system_size]])
         return nn_spins
 
+
+
     def get_deltaE(self, indices):
         """Finds the energy difference if a spin is flipped.
 
@@ -88,10 +105,12 @@ class Ising(object):
         return 2 * J * spin_value * np.sum(nn_spins)
 
 
+
     def get_total_magnetisation(self):
         magnetisation = np.sum(self.spins)
         self.magnetisation_list.append(magnetisation)
         return magnetisation
+
 
 
     def get_susceptibility(self, magnetisations=None, no_states=None):
@@ -107,11 +126,15 @@ class Ising(object):
             no_states = self.system_size
 
         # (average of M)**2
-        g = np.average(magnetisations)**2
-        # average of (M**2)
-        h = np.average(np.array(magnetisations)**2)
-        n = h - g
-        return n/((no_states)**2 * self.temperature)
+        # g = np.average(magnetisations)**2
+        # # average of (M**2)
+        # h = np.average(np.array(magnetisations)**2)
+        # n = h - g
+        norm = 1/(self.system_size**2 * self.temperature)
+        sus = norm * (np.average(np.square(magnetisations)) - np.square(np.average(magnetisations)))
+        return sus
+        # return n/((no_states)**2 * self.temperature)
+
 
 
     def get_total_energy(self):
@@ -126,11 +149,12 @@ class Ising(object):
             # don't repeat sum
             for j in range(i+1, self.system_size):
                 nn_spins = self.get_nn_spins([i,j])
-                total_energy += np.sum(nn_spins)
+                total_energy += self.spins[i,j] * np.sum(nn_spins)
 
         total_energy *= -1 * J
         self.energy_list.append(total_energy)
         return total_energy
+
 
 
     def get_heat_capacity(self, energies=None, no_states=None):
@@ -148,11 +172,18 @@ class Ising(object):
         if no_states is None:
             no_states = self.system_size
 
-        g = np.average(energies)**2
+        norm_fact = 1 / (self.system_size**2 * self.temperature**2)
+        heat_cap = norm_fact * (np.average(np.square(energies)) - np.square(np.average(energies)))
 
-        h = np.average(np.array(energies)**2)
-        n = h-g
-        return n/((no_states)**2 * self.temperature**2)
+        return heat_cap
+
+        # g = np.average(energies)**2
+
+        # h = np.average(np.array(energies)**2)
+        # n = h-g
+        # return np.var(energies) / (no_states**2 * self.temperature**2)
+        # return n/((no_states)**2 * self.temperature**2)
+
 
 
     def get_bootstrap_error(self, n, k, q):
@@ -165,11 +196,6 @@ class Ising(object):
         Returns:
             float: error on specific heat for this temperature.
         """
-
-        # choose x number of energies from the list.
-        # calculate the specific heat capacity and save it.
-        # repeat k times with another random set of energies.
-        # compute sigma c from the list of heat capacities.
 
         quantity = []
 
@@ -186,6 +212,3 @@ class Ising(object):
         h = np.average(np.array(quantity)**2)
         error = np.sqrt(h-g)
         return error
-
-    def jacknife(self):
-        pass

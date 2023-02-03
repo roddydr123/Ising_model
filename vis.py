@@ -4,7 +4,7 @@ from physics import Ising
 import numpy as np
 
 J=1.0
-nstep=10000
+nstep=500
 
 if(len(sys.argv) != 4):
     print ("Usage python ising.animation.py N T method")
@@ -34,3 +34,14 @@ for n in range(nstep):
         im=ax.imshow(spins, animated=True)
         ax.draw_artist(im)
         plt.pause(0.011)
+        model.get_total_magnetisation()
+        model.get_total_energy()
+
+av_sp_heat = model.get_heat_capacity()
+av_energy = np.average(model.energy_list)
+av_magnetisation = np.average(model.magnetisation_list)
+av_susceptibility = model.get_susceptibility()
+
+c_error = model.get_bootstrap_error(200, 50, "c")
+
+print(f"{kT}, {av_sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {av_susceptibility}")
