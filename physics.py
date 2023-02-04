@@ -38,14 +38,12 @@ class Ising(object):
         # choose a random site
         # spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
 
-        spin_indices = self.rands[self.count][0:2]
+        spin_indices = self.rands[self.count][:2]
 
         # calculate change in energy if flipped
         deltaE = self.get_deltaE(spin_indices)
 
         prob_flip = np.exp(-deltaE/self.temperature)
-
-        # prob_rand = np.random.random()
 
         if self.probs[self.count] < prob_flip:
             self.spins[spin_indices[0], spin_indices[1]] *= -1
@@ -54,8 +52,10 @@ class Ising(object):
 
     def updateSpinsKawasaki(self):
         # choose a random site
-        first_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
-        second_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+        # first_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+        # second_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+        first_spin_indices = self.rands[self.count][:2]
+        second_spin_indices = self.rands[self.count][2:]
 
         first_spin_value = self.spins[first_spin_indices[0], first_spin_indices[1]]
         second_spin_value = self.spins[second_spin_indices[0], second_spin_indices[1]]
@@ -64,17 +64,18 @@ class Ising(object):
             # if the spins are the same, don't swap them.
             return
 
-        # calculate change in energy if flipped
+        # calculate change in energy if flipped.
         deltaE = self.get_deltaE(first_spin_indices) + self.get_deltaE(second_spin_indices)
 
+        # check if nearest neighbours by computing distance between the spins.
         if np.linalg.norm([first_spin_indices[0] - second_spin_indices[0], first_spin_indices[1], second_spin_indices[1]])%self.system_size == 1:
             deltaE +=4
 
         prob_flip = np.exp(-deltaE/self.temperature)
 
-        prob_rand = np.random.random()
+        # prob_rand = np.random.random()
 
-        if prob_rand < prob_flip:
+        if self.probs[self.count] < prob_flip:
             self.spins[first_spin_indices[0], first_spin_indices[1]] *= -1
             self.spins[second_spin_indices[0], second_spin_indices[1]] *= -1
 
