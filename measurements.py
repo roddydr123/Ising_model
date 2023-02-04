@@ -9,7 +9,9 @@ wait=100
 lx=50
 ly=lx
 
-method = "G"
+method = "K"
+
+run_name = "k1"
 
 def onerun(kT):
 
@@ -31,9 +33,9 @@ def onerun(kT):
             # with open(f"data/glautest{model.temperature}.dat", "a") as outfile:
             #     outfile.write(f"{model.get_total_magnetisation()} {model.get_total_energy()}\n")
 
-    with open(f"data/{model.temperature}.mags.dat", "w") as outfile:
+    with open(f"data/{model.temperature}.mags.{run_name}.dat", "w") as outfile:
         outfile.writelines(f"{model.magnetisation_list}")
-    with open(f"data/{model.temperature}.energies.dat", "w") as outfile:
+    with open(f"data/{model.temperature}.energies.{run_name}.dat", "w") as outfile:
         outfile.writelines(f"{model.energy_list}")
 
     sp_heat = model.get_heat_capacity()
@@ -42,10 +44,10 @@ def onerun(kT):
     susceptibility = model.get_susceptibility()
 
     c_error = model.get_bootstrap_error(200, 50, "c")
+    x_error = model.get_bootstrap_error(200, 50, "x")
 
-    # print(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {susceptibility}")
-    with open("data/results.dat", "a") as outfile:
-        outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {susceptibility}\n")
+    with open(f"data/results.{run_name}.dat", "a") as outfile:
+        outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {susceptibility}, {x_error}\n")
 
 
 def main():
@@ -56,7 +58,7 @@ def main():
 
     # make array of all the temperatures to loop through
     temps = np.round(np.arange(1, 3, 0.1), 3)
-    temps = [1.8]
+    # temps = [1.8]
 
     for temp in temps:
         onerun(temp)
