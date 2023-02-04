@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-read_data = np.genfromtxt("data/good_results (copy).dat", delimiter=",")
+read_data = np.genfromtxt("data/glauber.dat", delimiter=",")
 
 fig = plt.figure(figsize=(12, 9))
 

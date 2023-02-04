@@ -9,13 +9,11 @@ wait=100
 lx=50
 ly=lx
 
-# n_randints = nstep * lx * ly
-
 method = "G"
 
 def onerun(kT):
 
-    model = Ising(lx, kT, method)
+    model = Ising(lx, kT, method, nstep)
 
     for n in tqdm(range(nstep)):
         for i in range(lx):
@@ -24,13 +22,19 @@ def onerun(kT):
                     model.updateSpinsGlauber()
                 if method == "K":
                     model.updateSpinsKawasaki()
+                model.count += 1
 
         if n % 10 == 0 and n > wait:
 
             model.get_total_magnetisation()
             model.get_total_energy()
-            with open(f"data/outfile{model.temperature}redo2.dat", "a") as outfile:
-                outfile.write(f"{model.get_total_magnetisation()} {model.get_total_energy()}\n")
+            # with open(f"data/glautest{model.temperature}.dat", "a") as outfile:
+            #     outfile.write(f"{model.get_total_magnetisation()} {model.get_total_energy()}\n")
+
+    with open(f"data/{model.temperature}.mags.dat", "w") as outfile:
+        outfile.writelines(f"{model.magnetisation_list}")
+    with open(f"data/{model.temperature}.energies.dat", "w") as outfile:
+        outfile.writelines(f"{model.energy_list}")
 
     sp_heat = model.get_heat_capacity()
     av_energy = np.average(model.energy_list)

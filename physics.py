@@ -8,7 +8,7 @@ class Ising(object):
 
 
 
-    def __init__(self, system_size, temperature, method):
+    def __init__(self, system_size, temperature, method, nstep):
         np.random.seed(5)
         self.system_size = system_size
 
@@ -20,26 +20,34 @@ class Ising(object):
         self.magnetisation_list = []
         self.energy_list = []
 
-        # # random indices to choose spins
-        # self.rands = np.random.randint(0, system_size, size=(n_randints, 4))
+        # enough for 1 temperature: sweeps * iterations per sweep
+        n_randints = nstep * system_size**2
 
-        # # random numbers to compare probabilities with
-        # self.probs = 3
+        # random indices to choose spins
+        self.rands = np.random.randint(0, system_size, size=(n_randints, 4))
+
+        # random numbers to compare probabilities with
+        self.probs = np.random.rand(n_randints)
+
+        # keeps track of which iteration we're on for indexing random arrays.
+        self.count = 0
 
 
 
     def updateSpinsGlauber(self):
         # choose a random site
-        spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+        # spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
+
+        spin_indices = self.rands[self.count][0:2]
 
         # calculate change in energy if flipped
         deltaE = self.get_deltaE(spin_indices)
 
         prob_flip = np.exp(-deltaE/self.temperature)
 
-        prob_rand = np.random.random()
+        # prob_rand = np.random.random()
 
-        if prob_rand < prob_flip:
+        if self.probs[self.count] < prob_flip:
             self.spins[spin_indices[0], spin_indices[1]] *= -1
 
 
