@@ -29,11 +29,8 @@ def onerun(kT):
 
             model.get_total_magnetisation()
             model.get_total_energy()
-
-    with open("energyfile.dat", "a") as file:
-        file.write(model.energy_list)
-    with open("magfile.dat", "a") as file:
-        file.write(model.magnetisation_list)
+            with open(f"data/outfile{model.temperature}redo2.dat", "a") as outfile:
+                outfile.write(f"{model.get_total_magnetisation()} {model.get_total_energy()}\n")
 
     sp_heat = model.get_heat_capacity()
     av_energy = np.average(model.energy_list)
@@ -54,7 +51,8 @@ def main():
     f.close()
 
     # make array of all the temperatures to loop through
-    temps = np.round(np.arange(1, 3, 0.3), 3)
+    temps = np.round(np.arange(1, 3, 0.1), 3)
+    temps = [1.8]
 
     for temp in temps:
         onerun(temp)

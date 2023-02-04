@@ -9,7 +9,7 @@ class Ising(object):
 
 
     def __init__(self, system_size, temperature, method):
-        np.random.seed(10)
+        np.random.seed(5)
         self.system_size = system_size
 
         # make system of random spins up or down
@@ -113,7 +113,7 @@ class Ising(object):
 
 
 
-    def get_susceptibility(self, magnetisations=None, no_states=None):
+    def get_susceptibility(self, magnetisations=None):
         """Calculate magnetic susceptibility from all measurements.
 
         Returns:
@@ -122,18 +122,9 @@ class Ising(object):
 
         if magnetisations is None:
             magnetisations = self.magnetisation_list
-        if no_states is None:
-            no_states = self.system_size
 
-        # (average of M)**2
-        # g = np.average(magnetisations)**2
-        # # average of (M**2)
-        # h = np.average(np.array(magnetisations)**2)
-        # n = h - g
-        norm = 1/(self.system_size**2 * self.temperature)
-        sus = norm * (np.average(np.square(magnetisations)) - np.square(np.average(magnetisations)))
+        sus = 1/(self.temperature * self.system_size**2) * (np.var(magnetisations))
         return sus
-        # return n/((no_states)**2 * self.temperature)
 
 
 
@@ -157,7 +148,7 @@ class Ising(object):
 
 
 
-    def get_heat_capacity(self, energies=None, no_states=None):
+    def get_heat_capacity(self, energies=None):
         """Calculate the heat capacity per spin.
 
         Args:
@@ -169,20 +160,9 @@ class Ising(object):
         """
         if energies is None:
             energies = self.energy_list
-        if no_states is None:
-            no_states = self.system_size
 
-        norm_fact = 1 / (self.system_size**2 * self.temperature**2)
-        heat_cap = norm_fact * (np.average(np.square(energies)) - np.square(np.average(energies)))
-
-        return heat_cap
-
-        # g = np.average(energies)**2
-
-        # h = np.average(np.array(energies)**2)
-        # n = h-g
-        # return np.var(energies) / (no_states**2 * self.temperature**2)
-        # return n/((no_states)**2 * self.temperature**2)
+        C = 1/(self.temperature**2 * self.system_size**2) * (np.var(energies))
+        return C
 
 
 
@@ -202,11 +182,11 @@ class Ising(object):
         if q == "c":
             for i in range(k):
                 energies = np.random.choice(self.energy_list, n)
-                quantity.append(self.get_heat_capacity(energies=energies, no_states=n))
+                quantity.append(self.get_heat_capacity(energies=energies))
         elif q == "x":
             for i in range(k):
                 mags = np.random.choice(self.magnetisation_list, n)
-                quantity.append(self.get_susceptibility(magnetisations=mags, no_states=n))
+                quantity.append(self.get_susceptibility(magnetisations=mags))
 
         g = np.average(quantity)**2
         h = np.average(np.array(quantity)**2)
