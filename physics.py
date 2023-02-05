@@ -17,7 +17,7 @@ class Ising(object):
         if spins is None and method == "K":
             self.spins = np.random.choice([-1, 1], [system_size, system_size])
         # if glauber check if spins passed in.
-        elif spins is None and method == "G":
+        elif spins is not None and method == "G":
             self.spins = spins
         # if glauber set spins all to zero at start.
         else:
