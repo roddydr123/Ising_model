@@ -1,21 +1,20 @@
 from physics import Ising
 import numpy as np
 from tqdm import tqdm
+import itertools as it
 
 J=1.0
-nstep=10100
+nstep=150
 wait=100
 
 lx=50
 ly=lx
 
-method = "K"
+method = "G"
 
-run_name = "k1"
+run_name = "ghgh"
 
-def onerun(kT):
-
-    model = Ising(lx, kT, method, nstep)
+def onerun(kT, model):
 
     for n in tqdm(range(nstep)):
         for i in range(lx):
@@ -30,8 +29,6 @@ def onerun(kT):
 
             model.get_total_magnetisation()
             model.get_total_energy()
-            # with open(f"data/glautest{model.temperature}.dat", "a") as outfile:
-            #     outfile.write(f"{model.get_total_magnetisation()} {model.get_total_energy()}\n")
 
     with open(f"data/{model.temperature}.mags.{run_name}.dat", "w") as outfile:
         outfile.writelines(f"{model.magnetisation_list}")
@@ -48,6 +45,7 @@ def onerun(kT):
 
     with open(f"data/results.{run_name}.dat", "a") as outfile:
         outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {susceptibility}, {x_error}\n")
+    return model.spins
 
 
 def main():
@@ -60,8 +58,15 @@ def main():
     temps = np.round(np.arange(1, 3, 0.1), 3)
     # temps = [1.8]
 
-    for temp in temps:
-        onerun(temp)
+    for i, temp in enumerate(temps):
+        # if its the first temperature, generate a model with new spins.
+        # if its not the first, pass the spins matrix from the previous run.
+        if i == 0:
+            model = Ising(lx, temp, method, nstep)
+        else:
+            model = Ising(lx, temp, method, nstep, spins)
+        spins = onerun(temp, model)
+        
 
 
 main()
