@@ -14,7 +14,7 @@ class Ising(object):
         self.system_size = system_size
 
         # make system of random spins up or down if kawasaki or chosen
-        if (spins is None and method == "K") or spins == "random":
+        if (spins == "random" or method == "K"):
             self.spins = np.random.choice([-1, 1], [system_size, system_size])
         # if glauber check if spins passed in.
         elif (spins is not None and method == "G"):
