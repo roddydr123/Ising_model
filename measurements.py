@@ -1,7 +1,6 @@
 from physics import Ising
 import numpy as np
 from tqdm import tqdm
-import itertools as it
 
 J=1.0
 nstep=150
