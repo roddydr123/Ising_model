@@ -1,4 +1,5 @@
 import numpy as np
+import itertools as it
 
 
 J = 1
@@ -8,12 +9,15 @@ class Ising(object):
 
 
 
-    def __init__(self, system_size, temperature, method, nstep):
+    def __init__(self, system_size, temperature, method, nstep, spins=None):
         np.random.seed(5)
         self.system_size = system_size
 
         # make system of random spins up or down
-        self.spins = np.random.choice([-1, 1], [system_size, system_size])
+        if spins is None:
+            self.spins = np.random.choice([-1, 1], [system_size, system_size])
+        else:
+            self.spins = spins
 
         self.temperature = temperature
         self.method = method
@@ -33,10 +37,8 @@ class Ising(object):
         self.count = 0
 
 
-
     def updateSpinsGlauber(self):
         # choose a random site
-        # spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
 
         spin_indices = self.rands[self.count][:2]
 
@@ -52,8 +54,6 @@ class Ising(object):
 
     def updateSpinsKawasaki(self):
         # choose a random site
-        # first_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
-        # second_spin_indices = (np.random.randint(self.system_size), np.random.randint(self.system_size))
         first_spin_indices = self.rands[self.count][:2]
         second_spin_indices = self.rands[self.count][2:]
 
@@ -91,12 +91,11 @@ class Ising(object):
             array: The four nearest neighbour spins.
         """
 
-        nn_spins = np.array([self.spins[(indices[0] + 1)%self.system_size, indices[1]],
+        nn_spins = [self.spins[(indices[0] + 1)%self.system_size, indices[1]],
                              self.spins[indices[0] - 1, indices[1]],
                              self.spins[indices[0], indices[1] - 1],
-                             self.spins[indices[0], (indices[1] + 1)%self.system_size]])
+                             self.spins[indices[0], (indices[1] + 1)%self.system_size]]
         return nn_spins
-
 
 
     def get_deltaE(self, indices):
@@ -132,7 +131,7 @@ class Ising(object):
         if magnetisations is None:
             magnetisations = self.magnetisation_list
 
-        sus = 1/(self.temperature * self.system_size**2) * (np.var(magnetisations))
+        sus = 1/(self.temperature * self.system_size**2) * np.var(magnetisations)
         return sus
 
 
@@ -143,15 +142,21 @@ class Ising(object):
         Returns:
             float: Total energy
         """
-        total_energy = 0
 
-        for i in range(self.system_size):
-            # don't repeat sum
-            for j in range(i+1, self.system_size):
-                nn_spins = self.get_nn_spins([i,j])
-                total_energy += self.spins[i,j] * np.sum(nn_spins)
+        spins = self.spins
 
-        total_energy *= -1 * J
+	    # create a list of the spin indices, excluding ones which will be double counted.
+        indices = list(it.filterfalse(lambda x: x[0] >= x[1], np.ndindex(spins.shape)))
+
+	    # find the nearest neighbour spins.
+        nn_spins = list(map(lambda index: self.get_nn_spins((index[0], index[1])), indices))
+
+	    # only take some of the spin matrix to avoid double counting.
+        new_spins = list(map(lambda index: spins[index[0], index[1]], indices))
+
+	    # calculate total energy.
+        total_energy = -1 * J * np.sum(new_spins * np.sum(nn_spins, axis=1))
+
         self.energy_list.append(total_energy)
         return total_energy
 
@@ -170,7 +175,7 @@ class Ising(object):
         if energies is None:
             energies = self.energy_list
 
-        C = 1/(self.temperature**2 * self.system_size**2) * (np.var(energies))
+        C = 1/(self.temperature**2 * self.system_size**2) * np.var(energies)
         return C
 
 
