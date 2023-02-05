@@ -152,7 +152,6 @@ class Ising(object):
 	    # create a list of the spin indices, excluding ones which will be double counted.
         # indices = list(it.filterfalse(lambda x: x[0] >= x[1], np.ndindex(spins.shape)))
         indices = list(np.ndindex(spins.shape))
-        print(indices)
 
 	    # find the nearest neighbour spins.
         nn_spins = list(map(lambda index: self.get_nn_spins((index[0], index[1])), indices))
