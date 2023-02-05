@@ -9,9 +9,9 @@ wait=100
 lx=50
 ly=lx
 
-method = "G"
+method = "K"
 
-run_name = "G1"
+run_name = "K1"
 
 def onerun(kT, model):
 
@@ -49,13 +49,8 @@ def onerun(kT, model):
 
 def main():
 
-    # clear file
-    f = open("data/results.dat", "w")
-    f.close()
-
     # make array of all the temperatures to loop through
     temps = np.round(np.arange(1, 3, 0.1), 3)
-    # temps = [1.8]
 
     for i, temp in enumerate(temps):
         # if its the first temperature, generate a model with new spins.
