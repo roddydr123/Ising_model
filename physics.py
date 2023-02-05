@@ -13,11 +13,11 @@ class Ising(object):
         np.random.seed(5)
         self.system_size = system_size
 
-        # make system of random spins up or down if kawasaki
-        if spins is None and method == "K":
+        # make system of random spins up or down if kawasaki or chosen
+        if (spins is None and method == "K") or spins == "random":
             self.spins = np.random.choice([-1, 1], [system_size, system_size])
         # if glauber check if spins passed in.
-        elif spins is not None and method == "G":
+        elif (spins is not None and method == "G"):
             self.spins = spins
         # if glauber set spins all to zero at start.
         else:
