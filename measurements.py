@@ -9,9 +9,9 @@ wait=100
 lx=50
 ly=lx
 
-method = "K"
+method = "G"
 
-run_name = "K1"
+run_name = "G2"
 
 def onerun(kT, model):
 
