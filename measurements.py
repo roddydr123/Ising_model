@@ -9,11 +9,11 @@ wait=100
 lx=50
 ly=lx
 
-method = "G"
+method = "K"
 
-run_name = "test"
+run_name = "K2"
 
-write_to_file = False
+write_to_file = True
 
 def onerun(kT, model):
 
