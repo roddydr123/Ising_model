@@ -150,8 +150,8 @@ class Ising(object):
         spins = self.spins
 
 	    # create a list of the spin indices, excluding ones which will be double counted.
-        # indices = list(it.filterfalse(lambda x: x[0] >= x[1], np.ndindex(spins.shape)))
-        indices = list(np.ndindex(spins.shape))
+        indices = list(it.filterfalse(lambda x: x[0] >= x[1], np.ndindex(spins.shape)))
+        # indices = list(np.ndindex(spins.shape))
 
 	    # find the nearest neighbour spins.
         nn_spins = list(map(lambda index: self.get_nn_spins((index[0], index[1])), indices))
@@ -160,7 +160,7 @@ class Ising(object):
         new_spins = list(map(lambda index: spins[index[0], index[1]], indices))
 
 	    # calculate total energy.
-        total_energy = -1 * J * np.sum(new_spins * np.sum(nn_spins, axis=1)) / 2
+        total_energy = -1 * J * np.sum(new_spins * np.sum(nn_spins, axis=1))
 
         self.energy_list.append(total_energy)
         return total_energy
