@@ -9,9 +9,9 @@ wait=100
 lx=50
 ly=lx
 
-method = "K"
+method = "G"
 
-run_name = "K2"
+run_name = "G3"
 
 write_to_file = True
 
