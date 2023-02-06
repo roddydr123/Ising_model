@@ -3,15 +3,17 @@ import numpy as np
 from tqdm import tqdm
 
 J=1.0
-nstep=10100
+nstep=150
 wait=100
 
 lx=50
 ly=lx
 
-method = "K"
+method = "G"
 
-run_name = "K1"
+run_name = "test"
+
+write_to_file = False
 
 def onerun(kT, model):
 
@@ -29,11 +31,6 @@ def onerun(kT, model):
             model.get_total_magnetisation()
             model.get_total_energy()
 
-    with open(f"data/{model.temperature}.mags.{run_name}.dat", "w") as outfile:
-        outfile.writelines(f"{model.magnetisation_list}")
-    with open(f"data/{model.temperature}.energies.{run_name}.dat", "w") as outfile:
-        outfile.writelines(f"{model.energy_list}")
-
     sp_heat = model.get_heat_capacity()
     av_energy = np.average(model.energy_list)
     av_magnetisation = abs(np.average(model.magnetisation_list))
@@ -44,8 +41,13 @@ def onerun(kT, model):
     e_error = np.std(model.energy_list)
     m_error = np.std(model.magnetisation_list)
 
-    with open(f"data/results.{run_name}.dat", "a") as outfile:
-        outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {e_error}, {av_magnetisation}, {m_error}, {susceptibility}, {x_error}\n")
+    if write_to_file is True:
+        with open(f"data/{model.temperature}.mags.{run_name}.dat", "w") as outfile:
+            outfile.writelines(f"{model.magnetisation_list}")
+        with open(f"data/{model.temperature}.energies.{run_name}.dat", "w") as outfile:
+            outfile.writelines(f"{model.energy_list}")
+        with open(f"data/results.{run_name}.dat", "a") as outfile:
+            outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {e_error}, {av_magnetisation}, {m_error}, {susceptibility}, {x_error}\n")
     return model.spins
 
 
