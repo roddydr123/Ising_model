@@ -3,7 +3,7 @@ import numpy as np
 from tqdm import tqdm
 
 J=1.0
-nstep=150
+nstep=10100
 wait=100
 
 lx=50
