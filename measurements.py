@@ -41,9 +41,11 @@ def onerun(kT, model):
 
     c_error = model.get_bootstrap_error(200, 50, "c")
     x_error = model.get_bootstrap_error(200, 50, "x")
+    e_error = np.std(model.energy_list)
+    m_error = np.std(model.magnetisation_list)
 
     with open(f"data/results.{run_name}.dat", "a") as outfile:
-        outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {av_magnetisation}, {susceptibility}, {x_error}\n")
+        outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {e_error}, {av_magnetisation}, {m_error}, {susceptibility}, {x_error}\n")
     return model.spins
 
 
