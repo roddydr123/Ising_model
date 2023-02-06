@@ -13,9 +13,12 @@ class Ising(object):
         np.random.seed(5)
         self.system_size = system_size
 
-        if (spins is None):
-            # first temperature, make all spins up.
+        if (spins is None and method == "G"):
+            # glauber first temperature, make all spins up.
             self.spins = np.ones((system_size, system_size))
+        elif (spins is None and method == "K"):
+            # if first kawasaki run, random choice
+            self.spins = np.random.choice([-1, 1], [system_size, system_size])
         elif (type(spins) is str):
             # if random is chosen, make a random array
             self.spins = np.random.choice([-1, 1], [system_size, system_size])

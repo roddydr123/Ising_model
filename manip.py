@@ -17,13 +17,15 @@ for temp in temps:
 
     quantity = []
 
-    for i in range(k):
-        mags = np.random.choice(magnetisation_list, n)
-        quantity.append(model.get_susceptibility(magnetisations=mags))
+    # for i in range(k):
+    #     mags = np.random.choice(magnetisation_list, n)
+    #     quantity.append(model.get_susceptibility(magnetisations=mags))
 
-    g = np.average(quantity)**2
-    h = np.average(np.array(quantity)**2)
-    error = np.sqrt(h-g)
+    # g = np.average(quantity)**2
+    # h = np.average(np.array(quantity)**2)
+    # error = np.sqrt(h-g)
+
+    error = np.std(energies_list)
 
     print(error)
 
