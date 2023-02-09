@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from physics import Ising
 
 J=1.0
-nstep=500
+nstep=5000
 
 if(len(sys.argv) != 4):
     print ("Usage python vis.py N T method")
