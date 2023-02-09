@@ -10,7 +10,7 @@ class Ising(object):
 
 
     def __init__(self, system_size, temperature, method, nstep, spins=None):
-        np.random.seed(5)
+        # np.random.seed(5)
         self.system_size = system_size
 
         if (spins is None and method == "G"):
