@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-read_data = np.genfromtxt("findat/results.K2.dat", delimiter=",").T
+read_data = np.genfromtxt("findat/results.G3.dat", delimiter=",").T
 
 fig = plt.figure(figsize=(12, 9))
 
@@ -12,12 +12,12 @@ ax3 = fig.add_subplot(223)
 ax4 = fig.add_subplot(224)
 
 # ax1.scatter(read_data[0], (read_data[3]))
-ax1.errorbar(read_data[0], (read_data[3]), yerr=read_data[4], fmt="k-s")
+ax1.errorbar(read_data[0], (read_data[3]), yerr=read_data[4], fmt="k-s", capsize=3)
 ax1.set_ylabel("Energy")
 ax1.set_xlabel("kT")
 # ax1.set_ylim(ax1.get_ylim()[0], 0)
 
-ax2.errorbar(read_data[0], (read_data[5]), yerr=read_data[6], fmt="k-s")
+ax2.errorbar(read_data[0], (read_data[5]), yerr=read_data[6], fmt="k-s", capsize=3)
 # ax2.plot(read_data[0], (read_data[4]))
 ax2.set_ylabel("Magnetisation")
 ax2.set_xlabel("kT")
