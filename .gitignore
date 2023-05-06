@@ -134,3 +134,4 @@ launch.json
 output.dat
 *.dat
 .dat
+*.zip

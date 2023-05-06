@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-read_data = np.genfromtxt("findat/results.G3.dat", delimiter=",").T
+read_data = np.genfromtxt("findat/results.K3.dat", delimiter=",").T
 
 fig = plt.figure(figsize=(12, 9))
 

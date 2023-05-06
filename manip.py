@@ -5,15 +5,15 @@ from physics import Ising
 n = 200
 k = 50
 
-temps = np.round(np.arange(1, 3, 0.1), 3)
+temps = np.round(np.arange(1, 3, 0.1), 3)[:1]
 
 for temp in temps:
 
     model = Ising(50, temp, "G", 10100)
-    data = np.genfromtxt(f"data/outfile{temp}.dat")
+    data = np.genfromtxt(f"data/{temp}.mags.G4.dat")
 
-    energies_list = data.T[1]
-    magnetisation_list = data.T[0]
+    # energies_list = data
+    magnetisations_list = data
 
     quantity = []
 
@@ -25,9 +25,10 @@ for temp in temps:
     # h = np.average(np.array(quantity)**2)
     # error = np.sqrt(h-g)
 
-    error = np.std(energies_list)
+    print(np.std(magnetisations_list))
+    print(np.std(abs(magnetisations_list)))
 
-    print(error)
+    print(data)
 
 
 
