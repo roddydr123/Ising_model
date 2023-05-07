@@ -3,6 +3,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 import itertools as it
 import sys
+from scipy.signal import convolve2d
 
 
 def updateSpinsGlauber(grid, rands, count, temperature, probs, J, grid_size):
@@ -108,18 +109,13 @@ def get_total_energy(grid, J):
         float: Total energy
     """
 
-    # # create a list of the spin indices, excluding ones which will be double counted.
-    # indices = list(it.filterfalse(lambda x: x[0] >= x[1], np.ndindex(grid)))
+    # define the convolution kernel
+    kernel = np.array([[0, 1, 0], [1, 0, 1], [0, 1, 0]])
 
-    # # find the nearest neighbour spins.
-    # nn_spins = list(map(lambda index: get_nn_spins((index[0], index[1])), indices))
+    # compute the sum of nearest neighbors with periodic boundary conditions
+    neighbor_sum = convolve2d(grid, kernel, mode='same', boundary='wrap')
 
-    # # only take some of the spin matrix to avoid double counting.
-    # new_grid = list(map(lambda index: grid[index[0], index[1]], indices))
-
-    # # calculate total energy.
-    # total_energy = -1 * J * np.sum(new_grid * np.sum(nn_spins, axis=1))
-    total_energy = 0
+    total_energy = -J * (1/2) * np.sum(neighbor_sum * grid)
 
     return total_energy
 
@@ -171,7 +167,7 @@ def get_bootstrap_error(n, k, q):
     return error
 
 
-def run_sim(kT, update_func, nsweeps, grid_size, vis, grid, J):
+def run_sim(kT, update_func, nsweeps, grid_size, vis, grid, J, filename):
 
     # if we wanted a visualisation, make a figure for it.
     if vis:
@@ -206,12 +202,12 @@ def run_sim(kT, update_func, nsweeps, grid_size, vis, grid, J):
             magnetisation = np.sum(grid)
             total_energy = get_total_energy(grid, J)
 
-            with open("ising.dat", "a") as f:
+            with open(filename, "a") as f:
                 f.write(f"{n}, {magnetisation}, {total_energy}\n")
 
         # check if the simulation has converged.
         if n % 10 == 0 and n > wait and update_func == updateSpinsGlauber:
-            data = np.genfromtxt('ising.dat', delimiter=',', skip_header=1)
+            data = np.genfromtxt(filename, delimiter=',', skip_header=1)
             if len(set(np.round(data[-10:-1][:,1], 7))) == 1:
                 # convergence
                 break
@@ -225,6 +221,11 @@ def main():
         print("Usage ising_model.py <vis> <grid_size> <temperature> <method>")
         sys.exit()
 
+    filename = input("Write to file: <name>|'d': ")
+    if filename == "d":
+        filename = "exam_data/ising.dat"
+    else:
+        filename = f"exam_data/{filename}.dat"
 
     grid_size = int(grid_size)
     temperature = float(temperature)
@@ -253,10 +254,10 @@ def main():
     nsweeps = 1000
 
     # clear a file to write free energy data to.
-    with open("ising.dat", "w") as f:
+    with open(filename, "w") as f:
         f.write("iteration, magnetisation, total energy\n")
 
-    run_sim(k * temperature, update_func, nsweeps, grid_size, vis, grid, J)
+    run_sim(k * temperature, update_func, nsweeps, grid_size, vis, grid, J, filename)
 
 
 main()
