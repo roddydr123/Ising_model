@@ -33,7 +33,7 @@ def updateSpinsKawasaki(grid, rands, count, temperature, probs, J, grid_size):
 
     if first_spin_value == second_spin_value:
         # if the spins are the same, don't swap them.
-        return
+        return grid
 
     # calculate change in energy if flipped.
     deltaE = get_deltaE(first_spin_indices, grid, J, grid_size) + get_deltaE(second_spin_indices, grid, J, grid_size)
@@ -190,12 +190,13 @@ def run_sim(kT, update_func, nsweeps, grid_size, vis, grid, J):
     for n in tqdm(range(nsweeps)):
         for i in range(grid_size**2):
             grid = update_func(grid, rands, (n * grid_size**2 + i), kT, probs, J, grid_size)
+            # print(grid)
 
         # every 50 sweeps update the animation.
         if n % 10 == 0 and vis:
             
             plt.cla()
-            im = ax.imshow(grid, animated=True, cmap='bwr')
+            im = ax.imshow(grid, animated=True, cmap='bwr', interpolation='bicubic')
             plt.draw()
             plt.pause(0.00001)
 
@@ -208,34 +209,12 @@ def run_sim(kT, update_func, nsweeps, grid_size, vis, grid, J):
             with open("ising.dat", "a") as f:
                 f.write(f"{n}, {magnetisation}, {total_energy}\n")
 
-        # check if the simulation has converged every 100 sweeps.
-        if n % 10 == 0 and n > wait:
+        # check if the simulation has converged.
+        if n % 10 == 0 and n > wait and update_func == updateSpinsGlauber:
             data = np.genfromtxt('ising.dat', delimiter=',', skip_header=1)
             if len(set(np.round(data[-10:-1][:,1], 7))) == 1:
                 # convergence
                 break
-
-    # sp_heat = get_heat_capacity()
-    # av_energy = np.average(energy_list)
-    # av_magnetisation = abs(np.average(magnetisation_list))
-    # susceptibility = get_susceptibility()
-
-    # c_error = get_bootstrap_error(200, 50, "c")
-    # x_error = get_bootstrap_error(200, 50, "x")
-    # e_error = np.std(np.abs(energy_list))
-    # m_error = np.std(np.abs(magnetisation_list))
-
-    # if write_to_file is True:
-    #     with open(f"data/{model.temperature}.mags.{run_name}.dat", "w") as outfile:
-    #         for line in model.magnetisation_list:
-    #             outfile.write(str(line)+"\n")
-    #     with open(f"data/{model.temperature}.energies.{run_name}.dat", "w") as outfile:
-    #         for line in model.energy_list:
-    #             outfile.write(str(line)+"\n")
-    #     with open(f"data/results.{run_name}.dat", "a") as outfile:
-    #         outfile.write(f"{kT}, {sp_heat}, {c_error}, {av_energy}, {e_error}, {av_magnetisation}, {m_error}, {susceptibility}, {x_error}\n")
-    # return model.spins
-
 
 
 def main():
