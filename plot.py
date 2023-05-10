@@ -13,6 +13,8 @@ def single_magnetisation():
 
 
 def get_all_data():
+    """Function to run simulation with multiple values of kT and save results."""
+
     kT_list = np.arange(1, 3, 0.3)
 
     J = 1.0
@@ -27,7 +29,7 @@ def get_all_data():
 
 
 def analyse():
-
+    """Load and plot the saved data from multiple kT simulations."""
     kT_list = np.arange(1, 3, 0.3)
     grid_size = 50
 
@@ -44,7 +46,7 @@ def analyse():
     Cs = []
 
     for kT in kT_list:
-        filename = f"exam_data/temp-{kT}-K.dat"
+        filename = f"exam_data/temp-{kT}.dat"
         data = np.genfromtxt(filename, delimiter=',', skip_header=1)
         sus = 1/(kT * grid_size**2) * np.var(data[:,1])
         susceptibilities.append(sus)
