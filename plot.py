@@ -23,7 +23,7 @@ def get_all_data():
 
     for kT in kT_list:
         filename = f"exam_data/temp-{kT}-K.dat"
-        grid = run_sim(kT, updateSpinsKawasaki, 1000, grid_size, False, grid, J, filename)
+        grid = run_sim(kT, updateSpinsKawasaki, 10100, grid_size, False, grid, J, filename)
 
 
 def analyse():
@@ -55,10 +55,10 @@ def analyse():
         mean_energies.append(np.average(data[:,2]))
         mean_magnetisations.append(np.abs(np.average(data[:,1])))
 
-        # c_error = get_bootstrap_error(200, 500, data[:,2], grid_size**2 * kT)
-        # x_error = get_bootstrap_error(200, 500, data[:,1], grid_size**2 * kT**2)
-        c_error = get_jacknife_error(data[:,2], grid_size**2 * kT)
-        x_error = get_jacknife_error(data[:,1], grid_size**2 * kT**2)
+        c_error = get_jacknife_error(data[:,2], lambda x: np.var(x) / (grid_size**2 * kT**2))
+        x_error = get_jacknife_error(data[:,1], lambda x: np.var(x) / (grid_size**2 * kT))
+        # c_error = get_bootstrap_error(data[:,2], lambda x: np.var(x) / (grid_size**2 * kT**2))
+        # x_error = get_bootstrap_error(data[:,1], lambda x: np.var(x) / (grid_size**2 * kT))
         e_error = np.std(np.abs(data[:,2]))
         m_error = np.std(np.abs(data[:,1]))
 
@@ -75,31 +75,61 @@ def analyse():
     plt.show()
 
 
+def get_jacknife_error(data, interesting_quantity_func):
+    """
+    Working jacknife error function.
+    
+    data: raw data from which interesting quantity is calculated.
+    
+    interesting quantity func: function which takes raw data and returns interesting quantity.
+    """
 
-def get_bootstrap_error(n, k, data, constant):
+    # make sure data to be resampled is an array.
+    data = np.array(data)
 
-    quantity = []
+    # calculate the interested quantity using all data.
+    all_samples = interesting_quantity_func(data)
 
-    for i in range(k):
-        resample = np.random.choice(data, n)
-        quantity.append(1/constant * np.var(resample))
+    # prepare an array for the quantities calculated with resampling.
+    resampled_quantity = np.zeros(len(data))
 
-    error = np.var(quantity)
-    return error
-
-
-def get_jacknife_error(data, constant) -> float:
-
-    c = 1/constant * np.var(data)
-    quantity = []
-
+    # loop over all the data and remove one sample each time.
     for i in range(len(data)):
-        resample = np.var(data[np.arange(len(data)) != i])
-        quantity.append(1/constant * resample)
 
-    error = np.sqrt(np.sum((quantity - c)**2))
+        # array with all but one data point in it.
+        resample = data[np.arange(len(data)) != i]
+
+        # calculate the interesting quantity with the slightly reduced dataset.
+        resampled_quantity[i] = interesting_quantity_func(resample)
+
+    # find the error on the interesting quantity using the calculated values.
+    error = np.sqrt(np.sum((resampled_quantity - all_samples) ** 2))
     return error
 
 
-get_all_data()
-# analyse()
+def get_bootstrap_error(data, interesting_quantity_func):
+        """working bootstrap method."""
+
+        # how many resamples to do. 1000 should work well.
+        k = 1000
+
+        # prepare array for quantities calculated with resampling.
+        resampled_quantity = np.zeros(k)
+
+        # resample k times.
+        for i in range(k):
+
+            # take a sample from the data, same length as the data set but
+            # resampled with replacement.
+            resample = np.random.choice(data, len(data))
+
+            # calculate the interesting quantity with resampled dataset.
+            resampled_quantity[i] = interesting_quantity_func(resample)
+
+        # find the standard deviation of the newly calculated values.
+        error = np.sqrt(np.var(resampled_quantity))
+        return error
+
+
+# get_all_data()
+analyse()
