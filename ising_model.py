@@ -181,9 +181,9 @@ def main():
 
     filename = input("Write to file: <name>|'d': ")
     if filename == "d":
-        filename = "exam_data/ising.dat"
+        filename = "ising.dat"
     else:
-        filename = f"exam_data/{filename}.dat"
+        filename = f"{filename}.dat"
 
     grid_size = int(grid_size)
     temperature = float(temperature)
