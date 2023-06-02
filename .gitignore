@@ -128,9 +128,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-
-spins.dat
-launch.json
-output.dat
-*.zip
+ising.dat
 .vscode/
