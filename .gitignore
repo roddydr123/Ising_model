@@ -132,6 +132,5 @@ dmypy.json
 spins.dat
 launch.json
 output.dat
-*.dat
-.dat
 *.zip
+.vscode/
